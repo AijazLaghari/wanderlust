@@ -15,6 +15,8 @@
             padding: 10px;
             border-radius: 5px;
             overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
         }
         button {
             background-color: #4CAF50;
@@ -24,6 +26,7 @@
             border-radius: 4px;
             cursor: pointer;
             margin-bottom: 10px;
+            margin-right: 5px;
         }
         button:hover {
             background-color: #45a049;
@@ -31,40 +34,176 @@
         #results {
             margin-top: 20px;
         }
+        .settings {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        label {
+            margin-right: 10px;
+        }
+        input[type="text"] {
+            padding: 5px;
+            width: 300px;
+        }
+        input[type="checkbox"] {
+            margin-right: 5px;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <h1>API Testing Tool</h1>
     <p>This page helps test API connectivity and CORS issues.</p>
     
-    <button id="testAllBtn">Test All Posts</button>
-    <button id="testFeaturedBtn">Test Featured Posts</button>
-    <button id="testLatestBtn">Test Latest Posts</button>
+    <div class="settings">
+        <h3>API Settings</h3>
+        <div>
+            <label for="apiUrl">API URL:</label>
+            <input type="text" id="apiUrl" value="16.170.155.75:8080">
+        </div>
+        <div style="margin-top: 10px;">
+            <label>
+                <input type="checkbox" id="useHttps"> 
+                Use HTTPS
+            </label>
+            <label>
+                <input type="checkbox" id="withCredentials" checked> 
+                With Credentials
+            </label>
+        </div>
+    </div>
+    
+    <div>
+        <h3>Standard Endpoints</h3>
+        <button id="testAllBtn">Test All Posts</button>
+        <button id="testFeaturedBtn">Test Featured Posts</button>
+        <button id="testLatestBtn">Test Latest Posts</button>
+    </div>
+    
+    <div style="margin-top: 15px;">
+        <h3>Custom Endpoint</h3>
+        <input type="text" id="customEndpoint" placeholder="/api/posts/categories/Travel">
+        <button id="testCustomBtn">Test Custom Endpoint</button>
+    </div>
+    
+    <div style="margin-top: 15px;">
+        <h3>Frontend Test</h3>
+        <input type="text" id="frontendUrl" placeholder="http://your-frontend-url.com">
+        <button id="openCorsTestBtn">Open Frontend CORS Test</button>
+    </div>
     
     <div id="results">
         <h2>Results:</h2>
+        <div id="statusIndicator"></div>
         <pre id="output">Click a button to test the API...</pre>
     </div>
 
     <script>
-        const apiUrl = '16.170.155.75:8080'; // Change this to your API URL
+        const apiUrlInput = document.getElementById('apiUrl');
+        const useHttpsCheckbox = document.getElementById('useHttps');
+        const withCredentialsCheckbox = document.getElementById('withCredentials');
+        const customEndpointInput = document.getElementById('customEndpoint');
+        const frontendUrlInput = document.getElementById('frontendUrl');
         const output = document.getElementById('output');
+        const statusIndicator = document.getElementById('statusIndicator');
         
         // Test API endpoints
         document.getElementById('testAllBtn').addEventListener('click', () => {
-            testEndpoint(`http://${apiUrl}/api/posts`);
+            testEndpoint('/api/posts');
         });
         
         document.getElementById('testFeaturedBtn').addEventListener('click', () => {
-            testEndpoint(`http://${apiUrl}/api/posts/featured`);
+            testEndpoint('/api/posts/featured');
         });
         
         document.getElementById('testLatestBtn').addEventListener('click', () => {
-            testEndpoint(`http://${apiUrl}/api/posts/latest`);
+            testEndpoint('/api/posts/latest');
         });
         
+        document.getElementById('testCustomBtn').addEventListener('click', () => {
+            const endpoint = customEndpointInput.value;
+            if (endpoint) {
+                testEndpoint(endpoint);
+            } else {
+                output.textContent = 'Please enter a custom endpoint path.';
+            }
+        });
+        
+        document.getElementById('openCorsTestBtn').addEventListener('click', () => {
+            const frontendUrl = frontendUrlInput.value;
+            if (frontendUrl) {
+                const corsTestUrl = generateCorsTestUrl(frontendUrl);
+                window.open(corsTestUrl, '_blank');
+            } else {
+                output.textContent = 'Please enter a frontend URL.';
+            }
+        });
+        
+        function generateCorsTestUrl(frontendUrl) {
+            const baseApiUrl = getBaseApiUrl();
+            const corsTestCode = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>CORS Test from Frontend</title>
+                    <script>
+                        window.onload = function() {
+                            fetch('${baseApiUrl}/api/posts', {
+                                method: 'GET',
+                                headers: {
+                                    'Accept': 'application/json'
+                                },
+                                credentials: '${withCredentialsCheckbox.checked ? 'include' : 'omit'}'
+                            })
+                            .then(response => {
+                                document.getElementById('status').textContent = response.status + ' ' + response.statusText;
+                                return response.json();
+                            })
+                            .then(data => {
+                                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+                            })
+                            .catch(error => {
+                                document.getElementById('error').textContent = error.toString();
+                            });
+                        };
+                    </script>
+                </head>
+                <body>
+                    <h1>Testing CORS from Frontend</h1>
+                    <p>Testing connection to: ${baseApiUrl}/api/posts</p>
+                    <h3>Status:</h3>
+                    <div id="status"></div>
+                    <h3>Error:</h3>
+                    <div id="error" style="color: red;"></div>
+                    <h3>Result:</h3>
+                    <pre id="result" style="background-color: #f5f5f5; padding: 10px;"></pre>
+                </body>
+                </html>
+            `;
+            const blob = new Blob([corsTestCode], { type: 'text/html' });
+            return URL.createObjectURL(blob);
+        }
+        
+        function getBaseApiUrl() {
+            const protocol = useHttpsCheckbox.checked ? 'https://' : 'http://';
+            return protocol + apiUrlInput.value;
+        }
+        
         // Function to test an endpoint
-        function testEndpoint(url) {
+        function testEndpoint(path) {
+            const baseApiUrl = getBaseApiUrl();
+            const url = baseApiUrl + path;
+            
+            statusIndicator.innerHTML = '<span>Testing...</span>';
             output.textContent = `Testing ${url}...\n`;
             
             fetch(url, {
@@ -72,11 +211,18 @@
                 headers: {
                     'Accept': 'application/json'
                 },
-                credentials: 'include'
+                credentials: withCredentialsCheckbox.checked ? 'include' : 'omit'
             })
             .then(response => {
                 output.textContent += `Status: ${response.status} ${response.statusText}\n`;
                 output.textContent += `Headers: ${JSON.stringify(Object.fromEntries([...response.headers]), null, 2)}\n\n`;
+                
+                if (response.ok) {
+                    statusIndicator.innerHTML = '<span class="success">✅ Success</span>';
+                } else {
+                    statusIndicator.innerHTML = '<span class="error">❌ Error</span>';
+                }
+                
                 return response.json();
             })
             .then(data => {
@@ -90,6 +236,7 @@
                 }
             })
             .catch(error => {
+                statusIndicator.innerHTML = '<span class="error">❌ Error</span>';
                 output.textContent += `Error: ${error.message}\n`;
                 console.error('Error:', error);
             });

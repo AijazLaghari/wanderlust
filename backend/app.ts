@@ -17,25 +17,34 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Enhanced CORS configuration
-app.use(
-  cors({
-    // Allow all potential frontend origins
-    origin: [
-      FRONTEND_URL as string, 
-      'http://localhost:3000', 
-      'http://localhost:5173',
-      'http://127.0.0.1:3000',
-      'http://127.0.0.1:5173',
-      'https://wanderlust-aijazlaghari.vercel.app',
-      'http://16.170.155.75',
-      'http://16.170.155.75:3000'
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-  })
-);
+// Debug middleware to log requests
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log('Origin:', req.headers.origin);
+  console.log('Referer:', req.headers.referer);
+  next();
+});
+
+// Completely open CORS configuration for debugging
+app.use(cors({
+  origin: '*', // Allow all origins (temporary fix for debugging)
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+
+// Additional CORS headers for any response
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  // Handle preflight OPTIONS requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  next();
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
