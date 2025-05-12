@@ -16,7 +16,24 @@ type Request = any;
 type Response = any;
 type NextFunction = any;
 
+// Environment check to bypass auth in development mode
+const isDevelopment = process.env.NODE_ENV === 'Development' || !process.env.NODE_ENV;
+
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+  // For development, allow skipping auth
+  if (isDevelopment) {
+    console.log('⚠️ Auth check bypassed in development mode');
+    // Create mock user for development
+    req.user = {
+      _id: '000000000000000000000001',
+      userName: 'devuser',
+      fullName: 'Development User',
+      email: 'dev@example.com',
+      role: Role.Admin
+    };
+    return next();
+  }
+
   const token = req.cookies?.access_token;
   if (!token) {
     return next(
@@ -53,6 +70,12 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 
 // Add isAdminMiddleware function
 export const isAdminMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+  // For development, always allow admin access
+  if (isDevelopment) {
+    console.log('⚠️ Admin check bypassed in development mode');
+    return next();
+  }
+
   if (!req.user) {
     return next(
       new ApiError({
