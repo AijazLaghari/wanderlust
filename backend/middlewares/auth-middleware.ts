@@ -16,13 +16,16 @@ type Request = any;
 type Response = any;
 type NextFunction = any;
 
+// Set to true to always bypass auth for all environments (development and production)
+const BYPASS_AUTH = true;
+
 // Environment check to bypass auth in development mode
 const isDevelopment = process.env.NODE_ENV === 'Development' || !process.env.NODE_ENV;
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  // For development, allow skipping auth
-  if (isDevelopment) {
-    console.log('⚠️ Auth check bypassed in development mode');
+  // For development or if global bypass is enabled, allow skipping auth
+  if (isDevelopment || BYPASS_AUTH) {
+    console.log('⚠️ Auth check bypassed in development mode or by global setting');
     // Create mock user for development
     req.user = {
       _id: '000000000000000000000001',
@@ -70,9 +73,9 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 
 // Add isAdminMiddleware function
 export const isAdminMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  // For development, always allow admin access
-  if (isDevelopment) {
-    console.log('⚠️ Admin check bypassed in development mode');
+  // For development or if global bypass is enabled, always allow admin access
+  if (isDevelopment || BYPASS_AUTH) {
+    console.log('⚠️ Admin check bypassed in development mode or by global setting');
     return next();
   }
 
