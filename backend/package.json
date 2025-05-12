@@ -33,9 +33,10 @@
   },
   "scripts": {
     "test": "jest --watchAll  --detectOpenHandles --verbose --coverage ",
-    "build": "tsc",
+    "build": "tsc && npm run copy-public",
+    "copy-public": "mkdir -p dist/public && cp -r public/* dist/public/",
     "start": "node dist/server.js",
-    "dev": "nodemon --watch '*.ts' --exec 'tsc && node dist/server.js'",
+    "dev": "nodemon --watch '*.ts' --exec 'tsc && npm run copy-public && node dist/server.js'",
     "check": "prettier --check .",
     "format": "prettier --write .",
     "vercel-build": "echo yay"

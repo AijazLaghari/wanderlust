@@ -1,4 +1,11 @@
 import mongoose from 'mongoose';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get directory name
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Define post schema
 const postSchema = new mongoose.Schema({
@@ -12,60 +19,41 @@ const postSchema = new mongoose.Schema({
   authorId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
+    default: () => new mongoose.Types.ObjectId() // Add default value
   },
 });
 
 // Create post model
 const Post = mongoose.model('Post', postSchema);
 
-// Sample posts data
-const samplePosts = [
-  {
-    authorName: 'John Doe',
-    title: 'Exploring Paris',
-    imageLink: 'https://example.com/paris.jpg',
-    categories: ['Europe', 'City', 'Culture'],
-    description: 'Experience the magic of Paris with its iconic landmarks and delicious cuisine.',
-    isFeaturedPost: true,
-    authorId: new mongoose.Types.ObjectId(),
-  },
-  {
-    authorName: 'Jane Smith',
-    title: 'Hiking in the Swiss Alps',
-    imageLink: 'https://example.com/swiss-alps.jpg',
-    categories: ['Europe', 'Mountains', 'Adventure'],
-    description: 'Discover the breathtaking views and challenging trails of the Swiss Alps.',
-    isFeaturedPost: true,
-    authorId: new mongoose.Types.ObjectId(),
-  },
-  {
-    authorName: 'Alex Johnson',
-    title: 'Beaches of Thailand',
-    imageLink: 'https://example.com/thailand.jpg',
-    categories: ['Asia', 'Beach', 'Relaxation'],
-    description: 'Relax on the pristine beaches of Thailand with crystal-clear water and white sand.',
-    isFeaturedPost: false,
-    authorId: new mongoose.Types.ObjectId(),
-  },
-  {
-    authorName: 'Maria Garcia',
-    title: 'Exploring Tokyo',
-    imageLink: 'https://example.com/tokyo.jpg',
-    categories: ['Asia', 'City', 'Culture'],
-    description: 'Navigate the vibrant streets of Tokyo and experience Japanese culture.',
-    isFeaturedPost: false,
-    authorId: new mongoose.Types.ObjectId(),
-  },
-  {
-    authorName: 'Sam Wilson',
-    title: 'Safari in Kenya',
-    imageLink: 'https://example.com/kenya.jpg',
-    categories: ['Africa', 'Wildlife', 'Adventure'],
-    description: 'Witness the incredible wildlife of Kenya on an unforgettable safari adventure.',
-    isFeaturedPost: true,
-    authorId: new mongoose.Types.ObjectId(),
-  }
-];
+// Load sample posts data from the JSON file
+const samplePostsPath = path.join(__dirname, 'data', 'sample_posts.json');
+console.log('Looking for sample posts at:', samplePostsPath);
+
+// Read and parse the JSON file
+const samplePostsJson = JSON.parse(fs.readFileSync(samplePostsPath, 'utf8'));
+
+// Convert the JSON data to proper format for MongoDB
+const samplePosts = samplePostsJson.map(post => {
+  // Extract the ObjectId string from the MongoDB export format
+  const id = post._id?.$oid;
+  
+  // Convert timeOfPost from MongoDB format if it exists
+  const timeOfPost = post.timeOfPost?.$date ? new Date(post.timeOfPost.$date) : new Date();
+  
+  // Return formatted post object
+  return {
+    ...(id ? { _id: new mongoose.Types.ObjectId(id) } : {}),
+    authorName: post.authorName,
+    title: post.title,
+    imageLink: post.imageLink,
+    categories: post.categories,
+    description: post.description,
+    isFeaturedPost: post.isFeaturedPost,
+    timeOfPost: timeOfPost,
+    authorId: new mongoose.Types.ObjectId(), // Generate a new authorId if not present
+  };
+});
 
 // Connect to MongoDB and add sample posts
 mongoose.connect('mongodb://localhost:27017/wanderlust')
