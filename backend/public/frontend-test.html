@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend API Test</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 300px;
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .card-content {
+            padding: 15px;
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .card-author {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .card-description {
+            font-size: 14px;
+            color: #333;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .category-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .category {
+            background: #e0e0e0;
+            border-radius: 15px;
+            padding: 3px 10px;
+            font-size: 12px;
+        }
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            color: red;
+            padding: 10px;
+            background-color: #ffeeee;
+            border-radius: 4px;
+        }
+        #logs {
+            font-family: monospace;
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            height: 150px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Frontend API Test</h1>
+    <div>
+        <button id="fetchFeatured">Fetch Featured Posts</button>
+        <button id="fetchLatest">Fetch Latest Posts</button>
+        <button id="fetchAll">Fetch All Posts</button>
+        <select id="apiBaseUrl">
+            <option value="http://16.170.155.75:8080">EC2 (16.170.155.75:8080)</option>
+            <option value="http://localhost:8080">Localhost (8080)</option>
+        </select>
+    </div>
+
+    <div class="container">
+        <div>
+            <h2 class="section-title">Featured Posts</h2>
+            <div id="featuredPosts" class="card-container"></div>
+        </div>
+        
+        <div>
+            <h2 class="section-title">Latest Posts</h2>
+            <div id="latestPosts" class="card-container"></div>
+        </div>
+
+        <div>
+            <h2 class="section-title">All Posts</h2>
+            <div id="allPosts" class="card-container"></div>
+        </div>
+    </div>
+
+    <h3>Console Logs</h3>
+    <div id="logs"></div>
+
+    <script>
+        // Log function to display logs in the page
+        function log(message, isError = false) {
+            const logElement = document.getElementById('logs');
+            const logItem = document.createElement('div');
+            logItem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            if (isError) logItem.style.color = '#ff5555';
+            logElement.appendChild(logItem);
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+
+        // Create a post card
+        function createPostCard(post) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            const img = document.createElement('img');
+            img.src = post.imageLink;
+            img.alt = post.title;
+            
+            const content = document.createElement('div');
+            content.className = 'card-content';
+            
+            const title = document.createElement('div');
+            title.className = 'card-title';
+            title.textContent = post.title;
+            
+            const author = document.createElement('div');
+            author.className = 'card-author';
+            author.textContent = `By ${post.authorName} • ${new Date(post.timeOfPost).toLocaleDateString()}`;
+            
+            const description = document.createElement('div');
+            description.className = 'card-description';
+            description.textContent = post.description;
+            
+            const categoryPills = document.createElement('div');
+            categoryPills.className = 'category-pills';
+            
+            post.categories.forEach(category => {
+                const pill = document.createElement('span');
+                pill.className = 'category';
+                pill.textContent = category;
+                categoryPills.appendChild(pill);
+            });
+            
+            content.appendChild(title);
+            content.appendChild(author);
+            content.appendChild(description);
+            content.appendChild(categoryPills);
+            
+            card.appendChild(img);
+            card.appendChild(content);
+            
+            return card;
+        }
+
+        // Fetch posts
+        async function fetchPosts(endpoint, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '<p>Loading...</p>';
+            
+            const baseUrl = document.getElementById('apiBaseUrl').value;
+            const url = `${baseUrl}${endpoint}`;
+            
+            try {
+                log(`Fetching from: ${url}`);
+                const response = await fetch(url, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Status: ${response.status}`);
+                }
+                
+                const posts = await response.json();
+                log(`Received ${posts.length} posts from ${endpoint}`);
+                
+                container.innerHTML = '';
+                
+                if (posts.length === 0) {
+                    container.innerHTML = '<p>No posts found</p>';
+                    return;
+                }
+                
+                posts.forEach(post => {
+                    container.appendChild(createPostCard(post));
+                });
+            } catch (error) {
+                container.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                log(`Error fetching ${endpoint}: ${error.message}`, true);
+            }
+        }
+
+        // Initialize event listeners
+        document.getElementById('fetchFeatured').addEventListener('click', () => {
+            fetchPosts('/api/posts/featured', 'featuredPosts');
+        });
+        
+        document.getElementById('fetchLatest').addEventListener('click', () => {
+            fetchPosts('/api/posts/latest', 'latestPosts');
+        });
+        
+        document.getElementById('fetchAll').addEventListener('click', () => {
+            fetchPosts('/api/posts', 'allPosts');
+        });
+
+        // Initial load
+        log('Page loaded. Click a button to fetch posts.');
+    </script>
+</body>
+</html> 
