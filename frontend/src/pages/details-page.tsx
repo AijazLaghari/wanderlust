@@ -5,7 +5,6 @@ import arrowRightBlackIcon from '@/assets/svg/arrow-right-black.svg';
 import formatPostTime from '@/utils/format-post-time';
 import CategoryPill from '@/components/category-pill';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import Post from '@/types/post-type';
 import axiosInstance from '@/helpers/axios-instance';
 import { PostCardSkeleton } from '@/components/skeletons/post-card-skeleton';
@@ -41,10 +40,8 @@ export default function DetailsPage() {
       url = `/api/posts/admin/${postId}`;
     }
     try {
-      const resposne = await axios.delete(import.meta.env.VITE_API_PATH + url, {
-        withCredentials: true,
-      });
-      if (resposne.status === 200) {
+      const response = await axiosInstance.delete(url);
+      if (response.status === 200) {
         toast.success('Successfully post deleted!');
         navigate('/');
       }
@@ -57,10 +54,9 @@ export default function DetailsPage() {
   useEffect(() => {
     const getPostById = async () => {
       try {
-        await axios.get(import.meta.env.VITE_API_PATH + `/api/posts/${postId}`).then((response) => {
-          setIsLoading(false);
-          setPost(response.data);
-        });
+        const response = await axiosInstance.get(`/api/posts/${postId}`);
+        setIsLoading(false);
+        setPost(response.data);
       } catch (error) {
         console.log(error);
       }
