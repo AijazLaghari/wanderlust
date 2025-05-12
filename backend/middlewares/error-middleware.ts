@@ -1,5 +1,6 @@
-import { HTTP_STATUS, RESPONSE_MESSAGES } from '../utils/constants.js';
-import { Request, Response, NextFunction } from 'express';
+import { HTTP_STATUS, RESPONSE_MESSAGES } from '../utils/constants';
+import express from 'express';
+const { Request, Response, NextFunction } = express;
 
 const errorMiddleware = (err: any, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);

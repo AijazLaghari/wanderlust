@@ -1,14 +1,15 @@
 import { Router } from 'express';
-import { authMiddleware } from '../middlewares/auth-middleware.js';
-import passport from '../config/passport.js';
+import { authMiddleware } from '../middlewares/auth-middleware';
+import passport from '../config/passport';
 import jwt from 'jsonwebtoken';
-import { Request, Response } from 'express';
+import express from 'express';
+const { Request, Response } = express;
 import {
   signUpWithEmail,
   signInWithEmailOrUsername,
   signOutUser,
   isLoggedIn,
-} from '../controllers/auth-controller.js';
+} from '../controllers/auth-controller';
 
 const router = Router();
 

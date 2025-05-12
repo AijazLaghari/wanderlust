@@ -1,12 +1,12 @@
-import User from '../models/user.js';
+import User from '../models/user';
 import jwt from 'jsonwebtoken';
-import { HTTP_STATUS, RESPONSE_MESSAGES } from '../utils/constants.js';
-import { cookieOptions } from '../utils/cookie_options.js';
-import { JWT_SECRET } from '../config/utils.js';
-import { ApiError } from '../utils/api-error.js';
-import { ApiResponse } from '../utils/api-response.js';
-import { asyncHandler } from '../utils/async-handler.js';
-import { NextFunction, Request, Response } from 'express';
+import { HTTP_STATUS, RESPONSE_MESSAGES } from '../utils/constants';
+import { cookieOptions } from '../utils/cookie_options';
+import { JWT_SECRET } from '../config/utils';
+import { ApiError } from '../utils/api-error';
+import { ApiResponse } from '../utils/api-response';
+import { asyncHandler } from '../utils/async-handler';
+import { Request, Response, NextFunction } from 'express';
 
 //REGULAR EMAIL PASSWORD STRATEGY
 //1.Sign Up
@@ -151,7 +151,7 @@ export const signOutUser = asyncHandler(async (req: Request, res: Response, next
     }
   );
 
-  // Passport.js logout
+  // Passport.ts logout
   req.logout((err: any) => {
     if (err) {
       return next(

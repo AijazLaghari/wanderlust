@@ -1,7 +1,8 @@
-import { HTTP_STATUS, RESPONSE_MESSAGES } from '../utils/constants.js';
-import User from '../models/user.js';
-import { Role } from '../types/role-type.js';
-import { Request, Response } from 'express';
+import { HTTP_STATUS, RESPONSE_MESSAGES } from '../utils/constants';
+import User from '../models/user';
+import { Role } from '../types/role-type';
+import express from 'express';
+const { Request, Response } = express;
 
 export const getAllUserHandler = async (req: Request, res: Response) => {
   try {

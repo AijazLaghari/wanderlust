@@ -1,6 +1,7 @@
-import Post from '../models/post.js';
-import { HTTP_STATUS, RESPONSE_MESSAGES } from '../utils/constants.js';
-import { Request, Response, NextFunction } from 'express';
+import Post from '../models/post';
+import { HTTP_STATUS, RESPONSE_MESSAGES } from '../utils/constants';
+import express from 'express';
+const { Request, Response, NextFunction } = express;
 
 export const isAuthorMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   try {
