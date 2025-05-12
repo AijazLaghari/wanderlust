@@ -69,20 +69,26 @@ export const createPostHandler = async (req: Request, res: Response) => {
 
 export const getAllPostsHandler = async (req: Request, res: Response) => {
   try {
+    console.log('Fetching all posts from database...');
     const posts = await Post.find();
+    console.log(`Found ${posts.length} posts in database`);
     await storeDataInCache(REDIS_KEYS.ALL_POSTS, posts);
     return res.status(HTTP_STATUS.OK).json(posts);
   } catch (err: any) {
+    console.error('Error fetching all posts:', err);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: err.message });
   }
 };
 
 export const getFeaturedPostsHandler = async (req: Request, res: Response) => {
   try {
+    console.log('Fetching featured posts from database...');
     const featuredPosts = await Post.find({ isFeaturedPost: true });
+    console.log(`Found ${featuredPosts.length} featured posts in database`);
     await storeDataInCache(REDIS_KEYS.FEATURED_POSTS, featuredPosts);
     res.status(HTTP_STATUS.OK).json(featuredPosts);
   } catch (err: any) {
+    console.error('Error fetching featured posts:', err);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: err.message });
   }
 };
@@ -106,10 +112,13 @@ export const getPostByCategoryHandler = async (req: Request, res: Response) => {
 
 export const getLatestPostsHandler = async (req: Request, res: Response) => {
   try {
+    console.log('Fetching latest posts from database...');
     const latestPosts = await Post.find().sort({ timeOfPost: -1 });
+    console.log(`Found ${latestPosts.length} latest posts in database`);
     await storeDataInCache(REDIS_KEYS.LATEST_POSTS, latestPosts);
     res.status(HTTP_STATUS.OK).json(latestPosts);
   } catch (err: any) {
+    console.error('Error fetching latest posts:', err);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: err.message });
   }
 };
