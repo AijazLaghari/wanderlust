@@ -10,9 +10,9 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "noImplicitAny": false,
-    "noEmit": true
+    "noEmit": false
   },
   "include": ["./**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "tests"]
 }
 

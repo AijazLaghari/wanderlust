@@ -12,13 +12,14 @@ interface UserObject extends Document {
   password?: string;
   avatar: string;
   role: string;
-  posts: any;
+  posts: any; // Use any instead of Schema.Types.ObjectId
   refreshToken?: string;
   isPasswordCorrect(password: string): Promise<boolean>;
   generateAccessToken(): Promise<string>;
   generateRefreshToken(): Promise<string>;
   generateResetToken(): Promise<string>;
 }
+
 const userSchema = new Schema(
   {
     userName: {
@@ -67,7 +68,7 @@ const userSchema = new Schema(
     },
     posts: [
       {
-        type: Schema.Types.ObjectId,
+        type: Schema['Types']['ObjectId'], // Use bracket notation instead of dot notation
         ref: 'Post',
       },
     ],
@@ -80,7 +81,6 @@ const userSchema = new Schema(
       required: false,
     },
   },
-
   { timestamps: true }
 );
 
