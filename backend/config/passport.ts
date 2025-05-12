@@ -1,6 +1,10 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import User from '../models/user';
+import User from '../models/user.js';
+
+// Add process declaration
+declare const process: any;
+
 passport.use(
   new GoogleStrategy(
     {

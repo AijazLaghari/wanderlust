@@ -36,7 +36,7 @@
   "scripts": {
     "test": "jest --watchAll  --detectOpenHandles --verbose --coverage ",
     "start": "ts-node server.ts",
-    "dev": "nodemon server.js",
+    "dev": "nodemon --exec ts-node server.ts",
     "check": "prettier --check .",
     "format": "prettier --write .",
     "vercel-build": "echo yay"

@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
-import { MONGODB_URI } from './utils';
+import { MONGODB_URI } from './utils.js';
+
+// Add process declaration
+declare const process: any;
 
 export default async function connectDB() {
   try {

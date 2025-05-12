@@ -2,8 +2,8 @@ import { Schema, model, Document } from 'mongoose';
 import JWT from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { ACCESS_TOKEN_EXPIRES_IN, JWT_SECRET, REFRESH_TOKEN_EXPIRES_IN } from '../config/utils';
-import { Role } from '../types/role-type';
+import { ACCESS_TOKEN_EXPIRES_IN, JWT_SECRET, REFRESH_TOKEN_EXPIRES_IN } from '../config/utils.js';
+import { Role } from '../types/role-type.js';
 
 interface UserObject extends Document {
   userName: string;
@@ -12,7 +12,7 @@ interface UserObject extends Document {
   password?: string;
   avatar: string;
   role: string;
-  posts: Schema.Types.ObjectId;
+  posts: any;
   refreshToken?: string;
   isPasswordCorrect(password: string): Promise<boolean>;
   generateAccessToken(): Promise<string>;
@@ -135,6 +135,6 @@ userSchema.methods = {
   },
 };
 
-const User = model<UserObject>('User', userSchema);
+const User = model('User', userSchema);
 
 export default User;

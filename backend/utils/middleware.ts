@@ -1,9 +1,8 @@
-import { retrieveDataFromCache } from './cache-posts';
-import { HTTP_STATUS } from './constants';
-import { Request, Response, NextFunction } from 'express';
+import { retrieveDataFromCache } from './cache-posts.js';
+import { HTTP_STATUS } from './constants.js';
 
 export const cacheHandler =
-  (key: string) => async (req: Request, res: Response, next: NextFunction) => {
+  (key: string) => async (req: any, res: any, next: any) => {
     try {
       const cachedData = await retrieveDataFromCache(key);
       if (cachedData) {

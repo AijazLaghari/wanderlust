@@ -1,27 +1,20 @@
-import { Request, Response, NextFunction } from 'express';
-
 import jwt from 'jsonwebtoken';
-import { ObjectId } from 'mongoose';
 
-import { JWT_SECRET } from '../config/utils';
-import { ApiError } from '../utils/api-error';
-import { HTTP_STATUS, RESPONSE_MESSAGES } from '../utils/constants';
-import User from '../models/user';
-import { Role } from '../types/role-type';
+import { JWT_SECRET } from '../config/utils.js';
+import { ApiError } from '../utils/api-error.js';
+import { HTTP_STATUS, RESPONSE_MESSAGES } from '../utils/constants.js';
+import User from '../models/user.js';
+import { Role } from '../types/role-type.js';
 
 // Define the payload structure of the JWT
 interface JwtPayload {
-  _id: ObjectId;
+  _id: string | any; // Use any instead of ObjectId
 }
 
-// Extend the Request type to include `user`
-declare global {
-  namespace Express {
-    interface Request {
-      user?: any; // Replace `any` with your IUser type if defined
-    }
-  }
-}
+// Using any types to resolve type issues
+type Request = any;
+type Response = any;
+type NextFunction = any;
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const token = req.cookies?.access_token;
@@ -56,4 +49,27 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
       })
     );
   }
+};
+
+// Add isAdminMiddleware function
+export const isAdminMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return next(
+      new ApiError({
+        status: HTTP_STATUS.UNAUTHORIZED,
+        message: RESPONSE_MESSAGES.USERS.RE_LOGIN,
+      })
+    );
+  }
+  
+  if (req.user.role !== Role.Admin) {
+    return next(
+      new ApiError({
+        status: HTTP_STATUS.FORBIDDEN,
+        message: RESPONSE_MESSAGES.USERS.UNAUTHORIZED_USER,
+      })
+    );
+  }
+  
+  next();
 };

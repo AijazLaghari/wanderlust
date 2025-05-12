@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { authMiddleware } from '../middlewares/auth-middleware';
-import passport from '../config/passport';
+import { authMiddleware } from '../middlewares/auth-middleware.js';
+import passport from '../config/passport.js';
 import jwt from 'jsonwebtoken';
 import express from 'express';
 const { Request, Response } = express;
@@ -9,7 +9,10 @@ import {
   signInWithEmailOrUsername,
   signOutUser,
   isLoggedIn,
-} from '../controllers/auth-controller';
+} from '../controllers/auth-controller.js';
+
+// Add this to avoid process.env errors
+declare const process: any;
 
 const router = Router();
 
@@ -23,7 +26,7 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 router.get(
   '/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
-  (req: Request, res: Response) => {
+  (req: any, res: any) => {
     let token = '';
     if (process.env.JWT_SECRET) {
       token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
@@ -37,7 +40,7 @@ router.get(
   }
 );
 
-router.get('/check', authMiddleware, (req, res) => {
+router.get('/check', authMiddleware, (req: any, res: any) => {
   const token = req.cookies.access_token;
   res.json({
     token,

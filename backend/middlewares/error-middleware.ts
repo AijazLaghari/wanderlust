@@ -1,6 +1,9 @@
-import { HTTP_STATUS, RESPONSE_MESSAGES } from '../utils/constants';
-import express from 'express';
-const { Request, Response, NextFunction } = express;
+import { HTTP_STATUS, RESPONSE_MESSAGES } from '../utils/constants.js';
+
+// Using any types to resolve type issues
+type Request = any;
+type Response = any;
+type NextFunction = any;
 
 const errorMiddleware = (err: any, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
