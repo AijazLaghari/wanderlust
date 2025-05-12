@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #results {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>API Testing Tool</h1>
+    <p>This page helps test API connectivity and CORS issues.</p>
+    
+    <button id="testAllBtn">Test All Posts</button>
+    <button id="testFeaturedBtn">Test Featured Posts</button>
+    <button id="testLatestBtn">Test Latest Posts</button>
+    
+    <div id="results">
+        <h2>Results:</h2>
+        <pre id="output">Click a button to test the API...</pre>
+    </div>
+
+    <script>
+        const apiUrl = '16.170.155.75:8080'; // Change this to your API URL
+        const output = document.getElementById('output');
+        
+        // Test API endpoints
+        document.getElementById('testAllBtn').addEventListener('click', () => {
+            testEndpoint(`http://${apiUrl}/api/posts`);
+        });
+        
+        document.getElementById('testFeaturedBtn').addEventListener('click', () => {
+            testEndpoint(`http://${apiUrl}/api/posts/featured`);
+        });
+        
+        document.getElementById('testLatestBtn').addEventListener('click', () => {
+            testEndpoint(`http://${apiUrl}/api/posts/latest`);
+        });
+        
+        // Function to test an endpoint
+        function testEndpoint(url) {
+            output.textContent = `Testing ${url}...\n`;
+            
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                },
+                credentials: 'include'
+            })
+            .then(response => {
+                output.textContent += `Status: ${response.status} ${response.statusText}\n`;
+                output.textContent += `Headers: ${JSON.stringify(Object.fromEntries([...response.headers]), null, 2)}\n\n`;
+                return response.json();
+            })
+            .then(data => {
+                if (Array.isArray(data)) {
+                    output.textContent += `Received ${data.length} items\n`;
+                    if (data.length > 0) {
+                        output.textContent += `First item: ${JSON.stringify(data[0], null, 2)}\n`;
+                    }
+                } else {
+                    output.textContent += `Data: ${JSON.stringify(data, null, 2)}\n`;
+                }
+            })
+            .catch(error => {
+                output.textContent += `Error: ${error.message}\n`;
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html> 
