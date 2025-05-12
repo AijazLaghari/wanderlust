@@ -34,7 +34,7 @@
   "scripts": {
     "test": "jest --watchAll  --detectOpenHandles --verbose --coverage ",
     "build": "tsc && npm run copy-public",
-    "copy-public": "mkdir -p dist/public && cp -r public/* dist/public/",
+    "copy-public": "if not exist dist\\public mkdir dist\\public && xcopy /E /I /Y public dist\\public",
     "start": "node dist/server.js",
     "dev": "nodemon --watch '*.ts' --exec 'tsc && npm run copy-public && node dist/server.js'",
     "check": "prettier --check .",

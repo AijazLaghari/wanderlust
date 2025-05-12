@@ -25,25 +25,33 @@ app.use((req, res, next) => {
   next();
 });
 
-// Completely open CORS configuration for debugging
+// CORS configuration for credentials-included requests
 app.use(cors({
-  origin: '*', // Allow all origins (temporary fix for debugging)
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl requests)
+    if (!origin) return callback(null, true);
+    
+    // List of allowed origins
+    const allowedOrigins = [
+      'http://16.170.155.75:5173',    // Frontend development server
+      'http://localhost:5173',        // Local development
+      FRONTEND_URL,                   // Production frontend URL
+    ];
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, origin);
+    } else {
+      callback(null, allowedOrigins[0]); // Default to first allowed origin if not matched
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// Additional CORS headers for any response
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  
-  // Handle preflight OPTIONS requests
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  next();
+// Handle preflight OPTIONS requests
+app.options('*', (req, res) => {
+  res.status(200).end();
 });
 
 app.use(express.json());
